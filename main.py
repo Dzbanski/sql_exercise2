@@ -32,7 +32,6 @@ measure = Table(
 
 meta.create_all(engine)
 
-
 with open("clean_stations.csv", newline="",) as stations_file:
     read = csv.DictReader(stations_file)
 
@@ -50,3 +49,29 @@ with open("clean_measure.csv", newline="",) as measure_file:
         rows.append(row_measure)
 
     conn.execute(measure.insert(), rows)
+
+"""
+
+TESTY 
+
+s = measure.select().where(measure.c.station=="USC00519397")
+result = conn.execute(s)
+
+for j in result:
+    print(j)
+
+m = stations.insert().values(station="notak", latitude='21.424', longitude='-158.3234', elevation='2.0', name='Stacja', country='US', state='BR')
+conn.execute(m)
+d = stations.select().where(stations.c.station=="notak")
+result3 = conn.execute(d)
+
+for i in result3:
+    print(i)
+
+measure.drop(engine)
+
+"""
+
+
+
+conn.close()

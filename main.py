@@ -3,62 +3,68 @@ import csv
 from datetime import datetime
 from sqlalchemy import create_engine, Date, Table, ForeignKey, Float, Integer, String, Column, MetaData
 
-engine = create_engine('sqlite:///database.db')
+def main():
+    meta.create_all(engine)
 
-conn = engine.connect()
+    with open("clean_stations.csv", newline="",) as stations_file:
+        read = csv.DictReader(stations_file)
 
-meta = MetaData()
+        row_station = list(read)
 
-stations = Table(
-    'stations', meta,
-    Column('id', Integer, primary_key=True),
-    Column('station', String, unique=True),
-    Column('latitude', Float),
-    Column('longitude', Float),
-    Column('elevation', Float),
-    Column('name', String),
-    Column('country', String),
-    Column('state', String),
+        conn.execute(stations.insert(), row_station)
 
-)
+    with open("clean_measure.csv", newline="",) as measure_file:
+        read = csv.DictReader(measure_file)
 
-measure = Table(
-    'measure', meta,
-    Column('station', String, ForeignKey('stations.station')),
-    Column('date', Date),
-    Column('precip', Float),
-    Column('tobs', Integer),
-)
+        for row_measure in read:
+            row_measure["date"] = datetime.strptime(row_measure["date"], "%Y-%m-%d").date()
+            rows.append(row_measure)
 
-meta.create_all(engine)
+        conn.execute(measure.insert(), rows)
+        
 
-with open("clean_stations.csv", newline="",) as stations_file:
-    read = csv.DictReader(stations_file)
+if __name__ == "__main__":
 
-    row_station = list(read)
+    engine = create_engine('sqlite:///database.db')
 
-    conn.execute(stations.insert(), row_station)
+    conn = engine.connect()
 
-with open("clean_measure.csv", newline="",) as measure_file:
-    read = csv.DictReader(measure_file)
+    meta = MetaData()
 
-    rows = [] 
+    stations = Table(
+        'stations', meta,
+        Column('id', Integer, primary_key=True),
+        Column('station', String, unique=True),
+        Column('latitude', Float),
+        Column('longitude', Float),
+        Column('elevation', Float),
+        Column('name', String),
+        Column('country', String),
+        Column('state', String),
 
-    for row_measure in read:
-        row_measure["date"] = datetime.strptime(row_measure["date"], "%Y-%m-%d").date()
-        rows.append(row_measure)
+    )
 
-    conn.execute(measure.insert(), rows)
+    measure = Table(
+        'measure', meta,
+        Column('station', String, ForeignKey('stations.station')),
+        Column('date', Date),
+        Column('precip', Float),
+        Column('tobs', Integer),
+    )
+    rows = []
 
+    main()
+   
+    conn.close()
 """
 
 TESTY 
 
-s = measure.select().where(measure.c.station=="USC00519397")
-result = conn.execute(s)
+ s = measure.select().where(measure.c.station=="USC00519397")
+    result = conn.execute(s)
 
-for j in result:
-    print(j)
+    for j in result:
+        print(j)
 
 m = stations.insert().values(station="notak", latitude='21.424', longitude='-158.3234', elevation='2.0', name='Stacja', country='US', state='BR')
 conn.execute(m)
@@ -74,4 +80,4 @@ measure.drop(engine)
 
 
 
-conn.close()
+    
